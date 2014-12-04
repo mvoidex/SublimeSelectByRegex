@@ -71,18 +71,37 @@ class SelectAllRegex(sublime_plugin.TextCommand):
 		self.inner_regions = []
 		self.outer_regions = []
 		self.start = 0
-		while True:
-			m = self.rx.search(self.text, self.start)
-			if m and self.start != m.end():
-				if self.in_group:
-					if 'Select' in m.groupdict():
-						self.inner_regions.append(sublime.Region(m.start('Select'), m.end('Select')))
-						self.outer_regions.append(sublime.Region(m.start(), m.end()))
+
+		rs = [r for r in self.view.sel() if not r.empty()]
+		if rs: # Find in selections
+			for r in rs:
+				self.start = r.a
+				while True:
+					m = self.rx.search(self.text, self.start, r.b)
+					if m and self.start != m.end():
+						if self.in_group:
+							if 'Select' in m.groupdict():
+								self.inner_regions.append(sublime.Region(m.start('Select'), m.end('Select')))
+								self.outer_regions.append(sublime.Region(m.start(), m.end()))
+						else:
+							self.inner_regions.append(sublime.Region(m.start(), m.end()))
+						self.start = m.end()
+					else:
+						break
+		else: # Find anywhere
+			while True:
+				m = self.rx.search(self.text, self.start)
+				if m and self.start != m.end():
+					if self.in_group:
+						if 'Select' in m.groupdict():
+							self.inner_regions.append(sublime.Region(m.start('Select'), m.end('Select')))
+							self.outer_regions.append(sublime.Region(m.start(), m.end()))
+					else:
+						self.inner_regions.append(sublime.Region(m.start(), m.end()))
+					self.start = m.end()
 				else:
-					self.inner_regions.append(sublime.Region(m.start(), m.end()))
-				self.start = m.end()
-			else:
-				break
+					break
+		
 		self.view.add_regions('select all regex outer', self.outer_regions, 'string', '', sublime.DRAW_NO_FILL)
 		self.view.add_regions('select all regex inner', self.inner_regions, 'string', '', sublime.DRAW_NO_OUTLINE)
 
