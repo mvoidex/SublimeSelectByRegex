@@ -1,0 +1,10 @@
+[
+	{
+		"caption": "Select Next Regex",
+		"command": "select_next_regex"
+	},
+	{
+		"caption": "Select All Regex",
+		"command": "select_all_regex"
+	}
+]
