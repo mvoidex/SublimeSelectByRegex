@@ -20,43 +20,51 @@ def unwrap(rx, s):
 	# Unwrap both, 'unwrap_in' must be first
 	return unwrap_sel(unwrap_in(rx), s)
 
-class SelectNextRegex(sublime_plugin.TextCommand):
-	def run(self, edit):
+class SelectRegexNext(sublime_plugin.TextCommand):
+	def run(self, edit, regex = None, line = False):
 		self.text = self.view.substr(sublime.Region(0, self.view.size()))
-		self.view.window().show_input_panel('regex', '', self.on_done, self.on_change, self.on_cancel)
+		self.selections = [r for r in self.view.sel()]
+		self.line = line
+		self.view.sel().clear()
+		self.view.window().show_input_panel('regex', regex or '', self.on_done, self.on_change, self.on_cancel)
 
 	def on_done(self, rx):
 		self.view.erase_regions('select next regex outer')
 		self.view.erase_regions('select next regex inner')
 
-		self.view.sel().clear()
 		self.view.sel().add_all(self.inner_regions)
 
 	def on_change(self, rx):
 		self.in_group = has_in_group(rx)
 		self.inner_regions = []
 		self.outer_regions = []
-		for r in self.view.sel():
+		self.highlight_regions = []
+		for r in self.selections:
+			(cur_line, cur_column) = self.view.rowcol(r.a)
 			self.rx = re.compile(unwrap(rx, self.view.substr(r)), re.MULTILINE)
-			m = self.rx.search(self.text, r.a)
+			m = self.rx.search(self.view.substr(self.view.line(r)) if self.line else self.text, cur_column if self.line else r.b)
+			# get current point from regex position
+			def get_point(p):
+				return self.view.text_point(cur_line, p) if self.line else p
 			if m:
 				if self.in_group:
 					if 'Select' in m.groupdict():
-						self.inner_regions.append(sublime.Region(m.start('Select'), m.end('Select')))
-						self.outer_regions.append(sublime.Region(m.start(), m.end()))
+						self.inner_regions.append(sublime.Region(get_point(m.start('Select')), get_point(m.end('Select'))))
+						self.outer_regions.append(sublime.Region(get_point(m.start()), get_point(m.end())))
 				else:
-					self.inner_regions.append(sublime.Region(m.start(), m.end()))
+					self.inner_regions.append(sublime.Region(get_point(m.start()), get_point(m.end())))
 		self.view.add_regions('select next regex outer', self.outer_regions, 'string', '', sublime.DRAW_NO_FILL)
 		self.view.add_regions('select next regex inner', self.inner_regions, 'string', '', sublime.DRAW_NO_OUTLINE)
 
 	def on_cancel(self):
 		self.view.erase_regions('select next regex outer')
 		self.view.erase_regions('select next regex inner')
+		self.view.sel().add_all(self.selections)
 
-class SelectAllRegex(sublime_plugin.TextCommand):
+class SelectRegexAll(sublime_plugin.TextCommand):
 	def run(self, edit):
 		self.text = self.view.substr(sublime.Region(0, self.view.size()))
-		self.selections = [r for r in self.view.sel() if not r.empty()]
+		self.selections = [r for r in self.view.sel()]
 		self.view.sel().clear()
 		self.view.window().show_input_panel('regex', '', self.on_done, self.on_change, self.on_cancel)
 
@@ -74,7 +82,7 @@ class SelectAllRegex(sublime_plugin.TextCommand):
 		self.outer_regions = []
 		self.start = 0
 
-		rs = self.selections
+		rs = [r for r in self.selections if not r.empty()]
 		if rs: # Find in selections
 			for r in rs:
 				self.start = r.a
@@ -110,3 +118,9 @@ class SelectAllRegex(sublime_plugin.TextCommand):
 	def on_cancel(self):
 		self.view.erase_regions('select all regex outer')
 		self.view.erase_regions('select all regex inner')
+		self.view.sel().add_all(self.selections)
+
+class DropSelectRegexRegions(sublime_plugin.EventListener):
+	def on_selection_modified(self, view):
+		# view.erase_regions('select next regex highlight')
+		pass

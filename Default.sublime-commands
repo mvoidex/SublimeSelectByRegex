@@ -1,10 +1,15 @@
 [
 	{
-		"caption": "Select Next Regex",
-		"command": "select_next_regex"
+		"caption": "Select Regex: Next",
+		"command": "select_regex_next",
+		"args": { "line": true }
 	},
 	{
-		"caption": "Select All Regex",
-		"command": "select_all_regex"
+		"caption": "Select Regex: Next (multiline)",
+		"command": "select_regex_next"
+	},
+	{
+		"caption": "Select Regex: All",
+		"command": "select_regex_all"
 	}
 ]
