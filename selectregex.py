@@ -56,6 +56,8 @@ class SelectNextRegex(sublime_plugin.TextCommand):
 class SelectAllRegex(sublime_plugin.TextCommand):
 	def run(self, edit):
 		self.text = self.view.substr(sublime.Region(0, self.view.size()))
+		self.selections = [r for r in self.view.sel() if not r.empty()]
+		self.view.sel().clear()
 		self.view.window().show_input_panel('regex', '', self.on_done, self.on_change, self.on_cancel)
 
 	def on_done(self, rx):
@@ -72,7 +74,7 @@ class SelectAllRegex(sublime_plugin.TextCommand):
 		self.outer_regions = []
 		self.start = 0
 
-		rs = [r for r in self.view.sel() if not r.empty()]
+		rs = self.selections
 		if rs: # Find in selections
 			for r in rs:
 				self.start = r.a
