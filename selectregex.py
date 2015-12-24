@@ -42,7 +42,7 @@ class SelectRegexNext(sublime_plugin.TextCommand):
 		for r in self.selections:
 			(cur_line, cur_column) = self.view.rowcol(r.a)
 			self.rx = re.compile(unwrap(rx, self.view.substr(r)), re.MULTILINE)
-			m = self.rx.search(self.view.substr(self.view.line(r)) if self.line else self.text, cur_column if self.line else r.b)
+			m = self.rx.search(self.view.substr(self.view.line(r)) if self.line else self.text, cur_column if self.line else r.a)
 			# get current point from regex position
 			def get_point(p):
 				return self.view.text_point(cur_line, p) if self.line else p
@@ -62,11 +62,11 @@ class SelectRegexNext(sublime_plugin.TextCommand):
 		self.view.sel().add_all(self.selections)
 
 class SelectRegexAll(sublime_plugin.TextCommand):
-	def run(self, edit):
+	def run(self, edit, regex = None):
 		self.text = self.view.substr(sublime.Region(0, self.view.size()))
 		self.selections = [r for r in self.view.sel()]
 		self.view.sel().clear()
-		self.view.window().show_input_panel('regex', '', self.on_done, self.on_change, self.on_cancel)
+		self.view.window().show_input_panel('regex', regex or '', self.on_done, self.on_change, self.on_cancel)
 
 	def on_done(self, rx):
 		self.view.erase_regions('select all regex outer')
