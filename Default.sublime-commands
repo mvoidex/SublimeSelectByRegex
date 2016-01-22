@@ -1,11 +1,6 @@
 [
 	{
 		"caption": "Select By Regex: Next",
-		"command": "select_by_regex_next",
-		"args": { "line": true }
-	},
-	{
-		"caption": "Select By Regex: Next (multiline)",
 		"command": "select_by_regex_next"
 	},
 	{
