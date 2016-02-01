@@ -16,6 +16,9 @@ def unwrap_sel(rx, s):
 	# Unwrap $_ with regex, that match str
 	return rx.replace('$_', re.escape(s))
 
+def has_sel(rx):
+	return '$_' in rx
+
 def unwrap(rx, s):
 	# Unwrap both, 'unwrap_in' must be first
 	return unwrap_sel(unwrap_in(rx), s)
@@ -41,7 +44,7 @@ class SelectByRegexNext(sublime_plugin.TextCommand):
 		for r in self.selections:
 			self.rx = re.compile(unwrap(rx, self.view.substr(r)), re.MULTILINE)
 			m = self.rx.search(self.text, r.a)
-			if m and r.a == r.b or m.end() <= r.b: # Restrict to selection if it's not empty
+			if m and r.a == r.b or m.end() <= r.b or has_sel(rx): # Restrict to selection if it's not empty and doesn't have $_
 				if self.in_group:
 					if 'Select' in m.groupdict():
 						self.inner_regions.append(sublime.Region(m.start('Select'), m.end('Select')))
