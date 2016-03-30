@@ -43,8 +43,8 @@ class SelectByRegexNext(sublime_plugin.TextCommand):
 		self.highlight_regions = []
 		for r in self.selections:
 			self.rx = re.compile(unwrap(rx, self.view.substr(r)), re.MULTILINE)
-			m = self.rx.search(self.text, r.a)
-			if m and r.a == r.b or m.end() <= r.b or has_sel(rx): # Restrict to selection if it's not empty and doesn't have $_
+			m = self.rx.search(self.text, min(r.a, r.b))
+			if m and r.a == r.b or m.end() <= max(r.a, r.b) or has_sel(rx): # Restrict to selection if it's not empty and doesn't have $_
 				if self.in_group:
 					if 'Select' in m.groupdict():
 						self.inner_regions.append(sublime.Region(m.start('Select'), m.end('Select')))
@@ -83,9 +83,9 @@ class SelectByRegexAll(sublime_plugin.TextCommand):
 		rs = [r for r in self.selections if not r.empty()]
 		if rs: # Find in selections
 			for r in rs:
-				self.start = r.a
+				self.start = min(r.a, r.b)
 				while True:
-					m = self.rx.search(self.text, self.start, r.b)
+					m = self.rx.search(self.text, self.start, max(r.a, r.b))
 					if m and self.start != m.end():
 						if self.in_group:
 							if 'Select' in m.groupdict():
