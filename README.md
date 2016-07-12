@@ -1,6 +1,10 @@
 Select By Regex
 ==================
 
+[![Package Control](https://packagecontrol.herokuapp.com/downloads/Select%20By%20Regex.svg?style=flat-square)](https://packagecontrol.io/packages/Select%20By%20Regex)
+
+![Select](images/SelectAll.gif)
+
 This plugin used to select by regex. Command `Select By Regex: All` selects all, `Select By Regex: Next` selects first found regex for each selection. If you want restrict search for line, use `Expand Selection to Line` before calling `Select By Regex` command.<br>
 Regex can also contain special group `(!...)`, which used to mark group, which will be actually selected. If there are no such group, entire regex will be selected. `Select By Regex: Next` can also use `$_` to match string under current selection.
 
