@@ -3,6 +3,10 @@ import sublime
 import sublime_plugin
 
 
+def used_sel(rx):
+	return '$_' in rx
+
+
 def unwrap_sel(rx, s):
 	# Unwrap $_ with regex, that match str
 	return rx.replace('$_', re.escape(s))
@@ -36,9 +40,9 @@ class SelectByRegexNext(SelectByRegexBase):
 		self.highlight_regions = []
 		for r in self.selections:
 			self.rx = re.compile(unwrap_sel(rx, self.view.substr(r)), re.MULTILINE)
-			m = self.rx.search(self.text, r.a)
-			if m and r.a == r.b or m.end() <= r.b:  # Restrict to selection if it's not empty
-				if len(m.groups()) > 1:
+			m = self.rx.search(self.text, r.end() if used_sel(rx) else r.begin())
+			if m and (used_sel(rx) or r.empty() or m.end() < r.end()):  # Restrict to selection if it's not empty
+				if len(m.groups()) > 0:
 					self.mark_groups(m)
 				else:
 					self.inner_regions.append(sublime.Region(m.start(), m.end()))
@@ -71,9 +75,9 @@ class SelectByRegexAll(SelectByRegexBase):
 			for r in rs:
 				self.start = r.a
 				while True:
-					m = self.rx.search(self.text, self.start, r.b)
+					m = self.rx.search(self.text, self.start, r.end())
 					if m and self.start != m.end():
-						if len(m.groups()) > 1:
+						if len(m.groups()) > 0:
 							self.mark_groups(m)
 						else:
 							self.inner_regions.append(sublime.Region(m.start(), m.end()))
@@ -84,7 +88,7 @@ class SelectByRegexAll(SelectByRegexBase):
 			while True:
 				m = self.rx.search(self.text, self.start)
 				if m and self.start != m.end():
-					if len(m.groups()) > 1:
+					if len(m.groups()) > 0:
 						self.mark_groups(m)
 					else:
 						self.inner_regions.append(sublime.Region(m.start(), m.end()))
