@@ -73,7 +73,7 @@ class SelectByRegexAll(SelectByRegexBase):
 		rs = [r for r in self.selections if not r.empty()]
 		if rs:  # Find in selections
 			for r in rs:
-				self.start = r.a
+				self.start = r.begin()
 				while True:
 					m = self.rx.search(self.text, self.start, r.end())
 					if m and self.start != m.end():
