@@ -13,7 +13,6 @@ def unwrap_sel(rx, s):
 
 
 class SelectByRegexBase(sublime_plugin.TextCommand):
-
 	def run(self, edit, regex=None):
 		self.text = self.view.substr(sublime.Region(0, self.view.size()))
 		self.selections = [r for r in self.view.sel()]
@@ -24,6 +23,16 @@ class SelectByRegexBase(sublime_plugin.TextCommand):
 		for number, group in list(enumerate(match.groups(), start=1)):
 			self.inner_regions.append(sublime.Region(match.start(number), match.end(number)))
 		self.outer_regions.append(sublime.Region(match.start(), match.end()))
+
+	def focus(self):
+		if len(self.outer_regions):
+			self.view.show(self.outer_regions[0])
+		elif len(self.inner_regions):
+			self.view.show(self.inner_regions[0])
+
+	def restore(self):
+		self.view.sel().add_all(self.selections)
+		self.view.show(self.selections[0])
 
 
 class SelectByRegexNext(SelectByRegexBase):
@@ -46,13 +55,15 @@ class SelectByRegexNext(SelectByRegexBase):
 					self.mark_groups(m)
 				else:
 					self.inner_regions.append(sublime.Region(m.start(), m.end()))
+
+		self.focus()
 		self.view.add_regions('select by regex, next, outer', self.outer_regions, 'string', '', sublime.DRAW_NO_FILL)
 		self.view.add_regions('select by regex, next, inner', self.inner_regions, 'string', '', sublime.DRAW_NO_OUTLINE)
 
 	def on_cancel(self):
 		self.view.erase_regions('select by regex, next, outer')
 		self.view.erase_regions('select by regex, next, inner')
-		self.view.sel().add_all(self.selections)
+		self.restore()
 
 
 class SelectByRegexAll(SelectByRegexBase):
@@ -96,13 +107,14 @@ class SelectByRegexAll(SelectByRegexBase):
 				else:
 					break
 
+		self.focus()
 		self.view.add_regions('select by regex, all, outer', self.outer_regions, 'string', '', sublime.DRAW_NO_FILL)
 		self.view.add_regions('select by regex, all, inner', self.inner_regions, 'string', '', sublime.DRAW_NO_OUTLINE)
 
 	def on_cancel(self):
 		self.view.erase_regions('select by regex, all, outer')
 		self.view.erase_regions('select by regex, all, inner')
-		self.view.sel().add_all(self.selections)
+		self.restore()
 
 
 class DropSelectByRegexRegions(sublime_plugin.EventListener):
