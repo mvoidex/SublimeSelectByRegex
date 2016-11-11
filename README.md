@@ -11,18 +11,23 @@ If regex contain groups, then groups will be select. To exclude group from selec
 ![Select All](images/SelectRegexAll.png)
 ![Select Next](images/SelectRegexNext.gif)
 
+Consecutive `Next`
+---
+
+You can run `Next` command while it is active to go through matches:
+![Select Next Seq](images/SelectRegexSeq.gif)
+
 Bind to keys
 ---
 
 You can use this keymap
 <pre>
 {
-    "keys": ["ctrl+alt+f"],
-    "command": "select_by_regex_next",
+    "keys": ["alt+shift+/"],
+    "command": "select_by_regex_all",
 },
 {
-    "keys": ["ctrl+alt+a"],
-    "command": "select_by_regex_all"
+    "keys": ["alt+/"],
+    "command": "select_by_regex_next"
 }
 </pre>
-
